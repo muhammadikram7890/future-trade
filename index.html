@@ -1,0 +1,586 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Profit Calculator</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: Inter, Arial, sans-serif;
+    background: #0b1020;
+    color: #e5e7eb;
+    min-height: 100vh;
+    padding: 35px 16px;
+}
+
+.container { max-width: 850px; margin: auto; }
+
+.header { margin-bottom: 25px; }
+.header h1 { font-size: 27px; color: white; margin-bottom: 8px; }
+.header p { color: #929bb0; font-size: 14px; }
+
+.card {
+    background: #151c30;
+    border: 1px solid #29334b;
+    border-radius: 16px;
+    padding: 23px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 17px;
+    color: white;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.field label {
+    display: block;
+    color: #9ca9c0;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.input-wrap {
+    display: flex;
+    align-items: center;
+    background: #0d1426;
+    border: 1px solid #303c55;
+    border-radius: 9px;
+    padding: 0 12px;
+}
+
+.input-wrap:focus-within { border-color: #818cf8; }
+
+.input-wrap input {
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 13px 0;
+    font-size: 15px;
+}
+
+.input-wrap span {
+    color: #929bb0;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+select {
+    width: 100%;
+    background: #0d1426;
+    color: white;
+    border: 1px solid #303c55;
+    border-radius: 9px;
+    padding: 13px;
+    outline: none;
+    font-size: 14px;
+}
+
+.direction {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.direction button {
+    padding: 13px;
+    border: 1px solid #303c55;
+    background: #0d1426;
+    border-radius: 9px;
+    color: #aab4c8;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.direction button.active.long {
+    background: #123d30;
+    color: #4ade80;
+    border-color: #16a34a;
+}
+
+.direction button.active.short {
+    background: #451e2a;
+    color: #fb7185;
+    border-color: #e11d48;
+}
+
+.currency-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.currency-selector button {
+    padding: 14px;
+    background: #0d1426;
+    color: #aab4c8;
+    border: 1px solid #303c55;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.currency-selector button.active {
+    background: #252d52;
+    border-color: #818cf8;
+    color: white;
+}
+
+.result {
+    background: linear-gradient(135deg, #192b40, #172038);
+    border: 1px solid #344766;
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.result-label { font-size: 12px; color: #a7b3c8; margin-bottom: 10px; }
+
+.main-profit {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 7px;
+    overflow-wrap: anywhere;
+}
+
+.positive { color: #4ade80; }
+.negative { color: #fb7185; }
+
+.roi { font-size: 13px; color: #a7b3c8; }
+
+.result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.result-box {
+    background: #0d1426;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.result-box small {
+    display: block;
+    color: #929bb0;
+    margin-bottom: 8px;
+}
+
+.result-box strong {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+
+.details { margin-top: 20px; }
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #29334b;
+    font-size: 13px;
+}
+
+.detail-row span:first-child { color: #9ca9c0; }
+.detail-row strong { text-align: right; overflow-wrap: anywhere; }
+
+.note {
+    font-size: 12px;
+    color: #929bb0;
+    line-height: 1.7;
+    margin-top: 16px;
+}
+
+.footer {
+    text-align: center;
+    color: #66738b;
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+@media(max-width: 550px) {
+    body { padding: 22px 12px; }
+    .card { padding: 17px; }
+    .grid { grid-template-columns: 1fr; }
+    .main-profit { font-size: 25px; }
+    .result-box strong { font-size: 15px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>Futures Calculator</h1>
+        <p>Hitung estimasi profit dan loss trading Futures secara real-time.</p>
+    </div>
+
+    <div class="card">
+        <div class="section-title">01. Pilih Mata Uang</div>
+
+        <div class="currency-selector">
+            <button type="button" id="idrBtn" class="active"
+                onclick="setCurrency('IDR')">🇮🇩 IDR (Rupiah)</button>
+
+            <button type="button" id="usdtBtn"
+                onclick="setCurrency('USDT')">₮ USDT</button>
+        </div>
+
+        <div class="field">
+            <label>Kurs 1 USDT ke IDR (untuk konversi)</label>
+            <div class="input-wrap">
+                <span>Rp</span>
+                <input id="rate" type="number" value="16500" min="1">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">02. Pengaturan Trading</div>
+
+        <div class="grid">
+            <div class="field">
+                <label id="marginLabel">Modal / Margin (IDR)</label>
+                <div class="input-wrap">
+                    <span id="marginPrefix">Rp</span>
+                    <input id="margin" type="number" value="100000" min="0">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Leverage</label>
+                <select id="leverage">
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="5">5x</option>
+                    <option value="10" selected>10x</option>
+                    <option value="20">20x</option>
+                    <option value="50">50x</option>
+                    <option value="100">100x</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Jenis Posisi</label>
+                <div class="direction">
+                    <button type="button" id="long" class="active long"
+                        onclick="setSide('long')">↗ Long</button>
+                    <button type="button" id="short"
+                        onclick="setSide('short')">↘ Short</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Simbol Aset</label>
+                <select id="asset">
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="SOL">SOL</option>
+                    <option value="BNB">BNB</option>
+                    <option value="XRP">XRP</option>
+                    <option value="DOGE">DOGE</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">03. Harga Aset</div>
+
+        <div class="grid">
+            <div class="field">
+                <label id="entryLabel">Harga Masuk (IDR)</label>
+                <div class="input-wrap">
+                    <input id="entry" type="number"
+                        value="1650000000" min="0" step="any">
+                    <span id="entryUnit">IDR</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label id="currentLabel">Harga Sekarang (IDR)</label>
+                <div class="input-wrap">
+                    <input id="current" type="number"
+                        value="1732500000" min="0" step="any">
+                    <span id="currentUnit">IDR</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">04. Hasil Perhitungan</div>
+
+        <div class="result">
+            <div class="result-label">Estimasi Profit / Loss</div>
+            <div class="main-profit positive" id="profitMain">+Rp50.000</div>
+            <div class="roi" id="roi">ROI Margin: +50.00%</div>
+
+            <div class="result-grid">
+                <div class="result-box">
+                    <small>Profit / Loss</small>
+                    <strong id="profitValue" class="positive">+Rp50.000</strong>
+                </div>
+
+                <div class="result-box">
+                    <small>Nilai dalam mata uang lain</small>
+                    <strong id="convertedProfit">+3.03 USDT</strong>
+                </div>
+
+                <div class="result-box">
+                    <small>Total Ekuitas</small>
+                    <strong id="equity">Rp150.000</strong>
+                </div>
+
+                <div class="result-box">
+                    <small>Nilai Posisi</small>
+                    <strong id="position">Rp1.000.000</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="detail-row">
+                <span>Jumlah Aset</span>
+                <strong id="quantity">0.000606 BTC</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Perubahan Harga</span>
+                <strong id="change">+5.00%</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Harga Masuk (mata uang lain)</span>
+                <strong id="entryConverted">100,000 USDT</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Harga Sekarang (mata uang lain)</span>
+                <strong id="currentConverted">105,000 USDT</strong>
+            </div>
+        </div>
+
+        <p class="note">
+            Catatan: Kalkulator ini menggunakan simulasi kontrak
+            USDT-M linear. Mode IDR dan USDT hanya mengubah satuan
+            tampilan dan input, bukan jenis kontrak exchange.
+            Perhitungan belum memasukkan trading fee, funding fee,
+            slippage, maintenance margin, dan liquidation.
+            Ekuitas adalah estimasi teoritis.
+        </p>
+    </div>
+
+    <div class="footer">
+        Futures Profit Calculator · Educational Tool
+    </div>
+
+</div>
+
+<script>
+let side = 'long';
+let currency = 'IDR';
+
+const $ = id => document.getElementById(id);
+
+function formatNumber(value, digits = 2) {
+    return value.toLocaleString('en-US', {
+        maximumFractionDigits: digits,
+        minimumFractionDigits: 0
+    });
+}
+
+function formatMoney(value, unit = currency) {
+    if (unit === 'IDR') {
+        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
+    }
+
+    return formatNumber(value, 4) + ' USDT';
+}
+
+function setCurrency(value) {
+    currency = value;
+
+    $('idrBtn').classList.toggle('active', value === 'IDR');
+    $('usdtBtn').classList.toggle('active', value === 'USDT');
+
+    if (value === 'IDR') {
+        $('marginLabel').textContent = 'Modal / Margin (IDR)';
+        $('marginPrefix').textContent = 'Rp';
+
+        $('entryLabel').textContent = 'Harga Masuk (IDR)';
+        $('currentLabel').textContent = 'Harga Sekarang (IDR)';
+
+        $('entryUnit').textContent = 'IDR';
+        $('currentUnit').textContent = 'IDR';
+
+        $('margin').value = 100000;
+        $('entry').value = 1650000000;
+        $('current').value = 1732500000;
+    } else {
+        $('marginLabel').textContent = 'Modal / Margin (USDT)';
+        $('marginPrefix').textContent = '₮';
+
+        $('entryLabel').textContent = 'Harga Masuk (USDT)';
+        $('currentLabel').textContent = 'Harga Sekarang (USDT)';
+
+        $('entryUnit').textContent = 'USDT';
+        $('currentUnit').textContent = 'USDT';
+
+        $('margin').value = 10;
+        $('entry').value = 100000;
+        $('current').value = 105000;
+    }
+
+    calculate();
+}
+
+function setSide(value) {
+    side = value;
+
+    $('long').className = value === 'long'
+        ? 'active long' : '';
+
+    $('short').className = value === 'short'
+        ? 'active short' : '';
+
+    calculate();
+}
+
+function calculate() {
+    const margin = Number($('margin').value);
+    const leverage = Number($('leverage').value);
+    const rate = Number($('rate').value);
+    const entry = Number($('entry').value);
+    const current = Number($('current').value);
+    const asset = $('asset').value;
+
+    if (
+        !Number.isFinite(margin) ||
+        !Number.isFinite(leverage) ||
+        !Number.isFinite(rate) ||
+        !Number.isFinite(entry) ||
+        !Number.isFinite(current) ||
+        margin <= 0 || leverage <= 0 ||
+        rate <= 0 || entry <= 0 || current <= 0
+    ) {
+        $('profitMain').textContent = 'Input tidak valid';
+        $('profitValue').textContent = '-';
+        $('convertedProfit').textContent = '-';
+        $('equity').textContent = '-';
+        $('position').textContent = '-';
+        $('roi').textContent = 'Masukkan angka positif pada semua input.';
+        return;
+    }
+
+    // Semua perhitungan internal menggunakan USDT.
+    const marginUSDT = currency === 'IDR'
+        ? margin / rate
+        : margin;
+
+    const entryUSDT = currency === 'IDR'
+        ? entry / rate
+        : entry;
+
+    const currentUSDT = currency === 'IDR'
+        ? current / rate
+        : current;
+
+    // Nilai posisi dan jumlah aset.
+    const positionUSDT = marginUSDT * leverage;
+    const quantity = positionUSDT / entryUSDT;
+
+    // Perubahan harga.
+    const priceChange = (currentUSDT - entryUSDT) / entryUSDT;
+
+    const direction = side === 'long' ? 1 : -1;
+
+    // Profit dan loss.
+    const pnlUSDT = quantity *
+        (currentUSDT - entryUSDT) * direction;
+
+    const pnlIDR = pnlUSDT * rate;
+
+    const pnl = currency === 'IDR' ? pnlIDR : pnlUSDT;
+    const position = currency === 'IDR'
+        ? positionUSDT * rate
+        : positionUSDT;
+
+    const equity = margin + pnl;
+
+    const roi = marginUSDT > 0
+        ? (pnlUSDT / marginUSDT) * 100
+        : 0;
+
+    const sign = pnl > 0 ? '+' : '';
+    const color = pnl >= 0 ? 'positive' : 'negative';
+
+    $('profitMain').className = 'main-profit ' + color;
+    $('profitValue').className = color;
+
+    $('profitMain').textContent =
+        sign + formatMoney(pnl);
+
+    $('profitValue').textContent =
+        sign + formatMoney(pnl);
+
+    $('convertedProfit').textContent =
+        sign + formatMoney(
+            currency === 'IDR' ? pnlUSDT : pnlIDR,
+            currency === 'IDR' ? 'USDT' : 'IDR'
+        );
+
+    $('roi').textContent =
+        'ROI Margin: ' + (roi > 0 ? '+' : '') +
+        roi.toFixed(2) + '%';
+
+    $('equity').textContent = formatMoney(equity);
+    $('position').textContent = formatMoney(position);
+
+    $('quantity').textContent =
+        formatNumber(quantity, 10) + ' ' + asset;
+
+    $('change').textContent =
+        (priceChange > 0 ? '+' : '') +
+        (priceChange * 100).toFixed(2) + '%';
+
+    $('entryConverted').textContent =
+        formatMoney(
+            currency === 'IDR' ? entryUSDT : entryUSDT * rate,
+            currency === 'IDR' ? 'USDT' : 'IDR'
+        );
+
+    $('currentConverted').textContent =
+        formatMoney(
+            currency === 'IDR' ? currentUSDT : currentUSDT * rate,
+            currency === 'IDR' ? 'USDT' : 'IDR'
+        );
+}
+
+document.querySelectorAll('input, select').forEach(element => {
+    element.addEventListener('input', calculate);
+    element.addEventListener('change', calculate);
+});
+
+calculate();
+</script>
+</body>
+</html>
